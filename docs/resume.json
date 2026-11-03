@@ -1,0 +1,26 @@
+{
+  "status": "android_apk_verified",
+  "source": "MVP/react-native",
+  "design": "Local .fig pages 08 V5 and 09 prototype",
+  "completed": [
+    "React Native TypeScript screens and Figma flow reducer",
+    "Android BLE, permission, vibration, TTS, speech recognition and payment TurboModule",
+    "Durable cart, payment idempotency, history and recovery",
+    "Server expected-price guard and idempotent recovery update",
+    "Figma frame mapping and Korean development instructions"
+  ],
+  "last_passed_checks": {
+    "typescript": true,
+    "react_native_jest_tests": 59,
+    "server_tests": 9
+  },
+  "build": {
+    "apk_completed": true,
+    "artifact": "artifacts/link-react-native-v5.apk",
+    "sha256": "3a14ac0aeeeca979af9ed0516e4456251f3821970e5c680892811d60fa7a0570",
+    "verification": "assembleRelease and lintVitalRelease passed. APK v2 signature, API 24 minimum, ARM64 and x86_64, Hermes bytecode, archive integrity, 17 extracted Figma icons and bundled Noto Sans KR verified.",
+    "rebuild_command": ".\\Build-Android.ps1"
+  },
+  "device_qa": "BLE, TalkBack, Kakao app switching and real-device layout remain unverified",
+  "existing_apps": "Original MVP web/backend and Kotlin Android app preserved"
+}
