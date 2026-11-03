@@ -1,13 +1,13 @@
 param([switch]$SkipSync,[string]$Task='assembleRelease')
 $ErrorActionPreference='Stop'
 $sourceRoot=$PSScriptRoot
-$toolsRoot=Join-Path (Split-Path $sourceRoot) 'android\.tools'
+$toolsRoot=Join-Path $sourceRoot 'android\.tools'
 $stageRoot=Join-Path $env:TEMP 'link-react-native-v5'
 if(-not ([IO.Path]::GetFullPath($stageRoot)).StartsWith(([IO.Path]::GetFullPath($env:TEMP)),[StringComparison]::OrdinalIgnoreCase)){throw 'Invalid staging directory'}
 New-Item -ItemType Directory -Path $stageRoot -Force | Out-Null
 if(-not $SkipSync){
  # Only exclude this app's build outputs. Dependencies ship required JS inside build/.
- & robocopy $sourceRoot $stageRoot /E /XD .git .gradle artifacts .cxx .jest-cache "$sourceRoot\android\build" "$sourceRoot\android\app\build" /XF local.properties /NFL /NDL /NJH /NJS /NP
+ & robocopy $sourceRoot $stageRoot /E /XD .git .gradle artifacts .cxx .jest-cache "$toolsRoot" "$sourceRoot\android\build" "$sourceRoot\android\app\build" /XF local.properties /NFL /NDL /NJH /NJS /NP
  if($LASTEXITCODE -ge 8){throw "Source copy failed: $LASTEXITCODE"}
 }
 function Sync-Tool([string]$From,[string]$To){
@@ -38,10 +38,10 @@ New-Item -ItemType Directory -Path $env:GRADLE_USER_HOME -Force | Out-Null
 @("org.gradle.java.home=$($env:JAVA_HOME.Replace('\','/'))","org.gradle.java.installations.paths=$((Join-Path $asciiTools 'java17').Replace('\','/'))","org.gradle.java.installations.auto-download=false") | Set-Content -LiteralPath (Join-Path $env:GRADLE_USER_HOME 'gradle.properties') -Encoding utf8
 $env:PATH="$env:JAVA_HOME\bin;C:\Program Files\nodejs;$env:PATH"
 $gradleSource=Join-Path $toolsRoot 'gradle94\gradle-9.4.1'
-$gradleAlias=Join-Path $env:TEMP 'link-rn-gradle-dist'
-if(-not (Test-Path -LiteralPath $gradleAlias)){New-Item -ItemType Junction -Path $gradleAlias -Target $gradleSource | Out-Null}
+$gradleHome=Join-Path $asciiTools 'gradle-9.4.1'
+Sync-Tool $gradleSource $gradleHome
 Push-Location (Join-Path $stageRoot 'android')
-try{& (Join-Path $gradleAlias 'bin\gradle.bat') $Task --console=plain --no-daemon; if($LASTEXITCODE -ne 0){throw "Gradle failed: $LASTEXITCODE"}}finally{Pop-Location}
+try{& (Join-Path $gradleHome 'bin\gradle.bat') $Task --console=plain --no-daemon; if($LASTEXITCODE -ne 0){throw "Gradle failed: $LASTEXITCODE"}}finally{Pop-Location}
 if($Task -eq 'assembleRelease'){
  $artifactRoot=Join-Path $sourceRoot 'artifacts';New-Item -ItemType Directory -Path $artifactRoot -Force | Out-Null
  Copy-Item -LiteralPath (Join-Path $stageRoot 'android\app\build\outputs\apk\release\app-release.apk') -Destination (Join-Path $artifactRoot 'link-react-native-v5.apk')

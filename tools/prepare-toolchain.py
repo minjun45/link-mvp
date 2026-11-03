@@ -1,7 +1,17 @@
-import sys,pathlib,xml.etree.ElementTree as E,shutil,json
+import os,pathlib,xml.etree.ElementTree as E,shutil
 from xml.dom import minidom
-sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[2]/'android'/'tools'))
-from bootstrap import fetch,package,TOOLS
+from bootstrap import fetch,jdk,package,TOOLS
+
+licenses = TOOLS / 'sdk' / 'licenses'
+if not (licenses / 'android-sdk-license').is_file():
+ sdk_home = os.environ.get('ANDROID_HOME') or os.environ.get('ANDROID_SDK_ROOT')
+ sdk_licenses = pathlib.Path(sdk_home) / 'licenses' if sdk_home else None
+ if not sdk_licenses or not (sdk_licenses / 'android-sdk-license').is_file():
+  raise SystemExit('Set ANDROID_HOME to an Android SDK with licenses accepted through SDK Manager.')
+ shutil.copytree(sdk_licenses,licenses,dirs_exist_ok=True)
+
+if not any((candidate / 'bin' / 'java.exe').is_file() for candidate in (TOOLS / 'java').glob('*')):
+ jdk()
 # Official Corretto distribution avoids GitHub release rate limits.
 package('amazon-corretto-17.0.21.0.11-windows-x64-jdk.zip',
  'https://corretto.aws/downloads/resources/17.0.21.0.11/amazon-corretto-17.0.21.0.11-windows-x64-jdk.zip',
